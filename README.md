@@ -2,7 +2,7 @@
 
 Personal Workbench 是用于统一承接快速记录、项目、工作事项、备忘与附件的个人工作台。
 
-当前仓库已完成 Phase 0 工程基线：React + TypeScript + Vite 前端、FastAPI 后端、SQLite 基础配置、health API，以及响应式 Dashboard 壳子。
+当前仓库已完成 Phase 0 工程基线与 Phase 1 工作台 UI Shell：包含 React 路由、正式 Dashboard、响应式导航、Quick Capture 交互基础，以及 FastAPI health API。
 
 ## 技术栈
 
