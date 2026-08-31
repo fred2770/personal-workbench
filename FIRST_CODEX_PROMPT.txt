@@ -1,0 +1,37 @@
+你现在开始重新搭建 Personal Workbench 项目。
+
+严格执行以下要求：
+
+1. 先阅读项目根目录的 AGENTS.md、README.md、docs/PRODUCT.md、docs/ARCHITECTURE.md、docs/UI-SPEC.md、docs/DEVELOPMENT.md、docs/PROGRESS.md、docs/DECISIONS.md。
+
+2. 检查当前目录结构、git status、Node.js/npm、Python，并检查本地 Skills：
+   - E:\AI-Skills\personal-workbench-ui\SKILL.md
+   - E:\AI-Skills\frontend-quality-guard\SKILL.md
+   存在则读取并遵循。
+
+3. 本轮只完成 Phase 0 工程基线，不提前开发复杂业务：
+   - 初始化 React + TypeScript + Vite 前端
+   - 初始化 FastAPI 后端
+   - 后端默认端口 8800
+   - 前端默认端口 5173
+   - SQLite 基础配置，并通过 DATABASE_URL 为 PostgreSQL 留兼容能力
+   - 建立 GET /api/v1/health
+   - 前端首页调用 health，明确显示 API 在线/离线
+   - 建立合理前后端目录
+   - 加入 .env.example 和必要 .gitignore
+   - 建立后端最基本 pytest
+   - 确保前端 TypeScript/build 可通过
+   - 更新 README.md 实际启动命令
+   - 完成后更新 docs/PROGRESS.md
+
+4. UI 本阶段只做干净、专业、响应式 Dashboard 壳子，不一次性开发整个产品。遵守 UI-SPEC.md 和 personal-workbench-ui Skill。
+
+5. 禁止：微服务、Kubernetes、复杂权限、无理由大量依赖、大范围无关重构、git reset --hard、虚构测试结果。
+
+6. 必须实际验证：前端 typecheck（如支持）、npm run build、后端 pytest、后端应用导入/启动检查、git diff、git status。
+
+7. 某项因本机缺依赖无法验证时，明确写原因和解决命令，不得声称已通过。
+
+8. 完成后只汇报：本轮完成内容、关键目录/文件、实际验证及结果、遗留问题、建议 Git commit message。
+
+现在开始实施，不要只给方案。
