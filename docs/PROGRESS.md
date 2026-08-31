@@ -2,47 +2,50 @@
 
 ## 当前阶段
 
-Phase 0：工程基线已完成（2026-09-01）。
+Phase 1：整体工作台 UI Shell + Dashboard 已完成（2026-09-01）。
 
-## 本轮已完成
+## Phase 1 已完成
 
-- 建立 `frontend/`：React + TypeScript + Vite，默认端口 5173。
-- 建立 `backend/`：FastAPI 模块化目录，默认端口 8800。
-- 配置 SQLAlchemy 与默认 SQLite 数据库。
-- 支持通过 `DATABASE_URL` 切换 PostgreSQL，并使用 psycopg 3 驱动。
-- 建立 `GET /api/v1/health`，包含 API、版本与数据库连接状态。
-- 前端通过统一 API client 调用 health，明确展示 loading、API 在线和 API 离线状态。
-- 建立干净、专业、响应式的 Dashboard 壳子；业务入口保持禁用并标注后续阶段，未提前实现复杂业务。
-- 加入根目录 `.env.example`，完善 `.gitignore`。
-- 建立后端 pytest，并补齐前端 typecheck/build 脚本。
-- 更新 README 的环境准备、启动与验证命令。
+- 建立正式 App Shell：桌面 Sidebar、Topbar、Main Content 与响应式布局。
+- Sidebar 提供工作台、Inbox、项目、工作项、Memo、设置入口，支持真实路由切换和激活状态。
+- 手机端使用固定底部导航，不压缩桌面 Sidebar。
+- Topbar 展示当前页面标题、Ctrl+K 搜索入口、快速记录按钮和真实 API 在线/离线状态。
+- 建立 React Router 路由：`/`、`/dashboard`、`/inbox`、`/projects`、`/work-items`、`/memos`、`/settings`。
+- Dashboard 完成今日工作区、四项数据概览、Quick Capture、今日待办、最近工作与我的项目。
+- Quick Capture 支持内容、类型、项目、附件选择与当前会话提交，并可更新 Dashboard Inbox 数量。
+- Ctrl+K 可打开统一导航搜索；Ctrl+N 可定位并聚焦 Quick Capture。
+- 其他业务页面使用统一 Placeholder：“该模块将在下一阶段开发”。
+- 保留统一 API client 与 health 请求状态处理，未改动 FastAPI / health 基线。
 
-## 实际验证
+## 当前仍为 mock / 会话态
+
+- 今日待办、待处理问题、进行中项目、Inbox 数量为集中管理的 mock 数据。
+- 今日待办列表、最近工作和项目卡片均来自 `frontend/src/data/dashboard.ts`。
+- Quick Capture 只在当前浏览器会话更新 UI，不写入 SQLite，也不会在刷新后保留。
+- 附件仅完成选择、文件名展示、空文件和 10 MB 大小校验，尚未上传。
+- Inbox、项目、工作项、Memo、设置页面尚未接入业务数据。
+
+## Phase 1 实际验证
 
 - `npm run typecheck`：通过。
-- `npm run build`：通过，Vite 生产构建成功。
-- `.venv\Scripts\python.exe -m pytest`：通过，health 与 PostgreSQL URL 兼容测试共 `2 passed`。
-- FastAPI 应用导入与 OpenAPI 路径检查：通过。
-- Uvicorn 在 `127.0.0.1:8800` 实际启动：通过。
-- `GET /api/v1/health`：HTTP 200，返回 `status=ok`、`database=sqlite`。
-- Swagger UI `/docs`：HTTP 200。
-- Vite 在 `127.0.0.1:5173` 实际启动：通过。
-- 浏览器桌面与手机视口检查：API 在线可见，手机端无横向溢出，控制台无 error/warning。
-- 浏览器离线态回归：停止后端后显示“API 离线”，恢复后可重新检查为“API 在线”。
+- `npm run build`：通过。
+- 浏览器 1920、1366、820 平板、390 手机视口检查：无横向溢出，Topbar 未裁剪。
+- 桌面 Sidebar、平板折叠图标栏、手机底部导航均按断点生效。
+- `/` 重定向以及 `/dashboard`、`/inbox`、`/projects`、`/work-items`、`/memos`、`/settings` 的 Sidebar 导航、页面标题和 Placeholder 已逐页验证。
+- Ctrl+K 导航搜索已验证，共展示 6 个路由入口。
+- Quick Capture 类型、项目选择和提交已验证；Inbox 数量可从 12 更新到 13。
+- 浏览器控制台未发现 error/warning。
 
-## Phase 0 完成标准
+## Phase 0 基线（保持）
 
-- [x] 前后端可启动
-- [x] health 正常
-- [x] 前端可调用后端
-- [x] Dashboard 壳子可响应式显示
-- [x] 前端 typecheck/build 通过
-- [x] 后端 pytest 通过
-- [x] Git 工作区变更明确
+- React + TypeScript + Vite 前端，默认端口 5173。
+- FastAPI + SQLAlchemy 后端，默认端口 8800。
+- 默认 SQLite，并通过 `DATABASE_URL` 保留 PostgreSQL 兼容。
+- `GET /api/v1/health`、pytest、环境示例和开发启动文档。
 
-## 下一步（Phase 1 候选，尚未开始）
+## Phase 2 下一步
 
-1. 根据产品文档细化首个业务切片。
-2. 建立正式数据模型与 Alembic migration。
-3. 优先跑通 Quick Capture → Inbox 的最小闭环。
-4. 为业务 API 与前端交互补充测试。
+1. 建立正式业务模型与 Alembic migration。
+2. 优先实现 Quick Capture → Inbox 的数据持久化闭环。
+3. 实现 Inbox 归类、转 WorkItem / Memo 与归档操作。
+4. 补充业务 API、前端请求状态与端到端测试。
