@@ -1,27 +1,13 @@
-from contextlib import asynccontextmanager
-from collections.abc import AsyncIterator
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.router import api_router
 from app.core.config import settings
-from app.db.base import Base
-from app.db.session import engine
-
-
-@asynccontextmanager
-async def lifespan(_: FastAPI) -> AsyncIterator[None]:
-    Base.metadata.create_all(bind=engine)
-    yield
-
-
 app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
     docs_url="/docs",
     redoc_url="/redoc",
-    lifespan=lifespan,
 )
 
 app.add_middleware(

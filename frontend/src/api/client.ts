@@ -15,6 +15,62 @@ export class ApiError extends Error {
   }
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function getErrorMessage(value: unknown): string | null {
+  if (!isRecord(value)) {
+    return null;
+  }
+  return typeof value.detail === "string" ? value.detail : null;
+}
+
+export async function apiRequest<T>(
+  path: string,
+  init: RequestInit = {},
+): Promise<T> {
+  let response: Response;
+
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      ...init,
+      headers: {
+        Accept: "application/json",
+        ...(init.body ? { "Content-Type": "application/json" } : {}),
+        ...init.headers,
+      },
+    });
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw error;
+    }
+    throw new ApiError("无法连接后端服务，请确认 API 已在 8800 端口启动。");
+  }
+
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
+  let data: unknown = null;
+  try {
+    data = await response.json();
+  } catch {
+    if (response.ok) {
+      throw new ApiError("API 返回了无法识别的数据。", response.status);
+    }
+  }
+
+  if (!response.ok) {
+    throw new ApiError(
+      getErrorMessage(data) ?? `API 返回异常状态（HTTP ${response.status}）。`,
+      response.status,
+    );
+  }
+
+  return data as T;
+}
+
 function isHealthResponse(value: unknown): value is HealthResponse {
   if (typeof value !== "object" || value === null) {
     return false;
@@ -30,27 +86,9 @@ function isHealthResponse(value: unknown): value is HealthResponse {
 }
 
 export async function getHealth(signal?: AbortSignal): Promise<HealthResponse> {
-  let response: Response;
-
-  try {
-    response = await fetch(`${API_BASE_URL}/api/v1/health`, {
-      headers: { Accept: "application/json" },
-      signal,
-    });
-  } catch (error) {
-    if (error instanceof DOMException && error.name === "AbortError") {
-      throw error;
-    }
-    throw new ApiError("无法连接后端服务，请确认 API 已在 8800 端口启动。");
-  }
-
-  if (!response.ok) {
-    throw new ApiError(`API 返回异常状态（HTTP ${response.status}）。`, response.status);
-  }
-
-  const data: unknown = await response.json();
+  const data: unknown = await apiRequest<unknown>("/api/v1/health", { signal });
   if (!isHealthResponse(data)) {
-    throw new ApiError("API 返回了无法识别的健康状态数据。", response.status);
+    throw new ApiError("API 返回了无法识别的健康状态数据。");
   }
 
   return data;

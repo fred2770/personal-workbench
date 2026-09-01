@@ -18,7 +18,12 @@ export function OverviewCards({ metrics }: OverviewCardsProps) {
         <article className={`overview-card tone-${metric.tone}`} key={metric.key}>
           <div className="overview-icon"><AppIcon name={metric.icon} size={17} /></div>
           <div className="overview-copy">
-            <span>{metric.label}</span>
+            <span>
+              {metric.label}
+              <em className={`metric-source metric-source--${metric.source}`}>
+                {metric.source === "live" ? "实时" : "示例"}
+              </em>
+            </span>
             <strong>{metric.value}</strong>
             <small>{metric.helper}</small>
           </div>

@@ -2,12 +2,12 @@
 
 Personal Workbench 是用于统一承接快速记录、项目、工作事项、备忘与附件的个人工作台。
 
-当前仓库已完成 Phase 0 工程基线与 Phase 1 工作台 UI Shell：包含 React 路由、正式 Dashboard、响应式导航、Quick Capture 交互基础，以及 FastAPI health API。
+当前仓库已完成 Phase 0 工程基线、Phase 1 工作台 UI Shell，以及 Phase 2 Quick Capture → SQLite → Inbox 真实业务闭环。
 
 ## 技术栈
 
 - Frontend: React 19 + TypeScript + Vite
-- Backend: FastAPI + SQLAlchemy
+- Backend: FastAPI + SQLAlchemy + Alembic
 - Database: SQLite（默认），通过 `DATABASE_URL` 可切换 PostgreSQL
 - Test: pytest
 
@@ -33,10 +33,11 @@ cd E:\project\personal-workbench\backend
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements-dev.txt
+python -m alembic upgrade head
 python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8800
 ```
 
-默认数据库文件为 `backend/data/personal_workbench.db`，首次访问 health 时自动创建。若需覆盖配置，可先在项目根目录执行：
+默认数据库文件为 `backend/data/personal_workbench.db`。首次启动和拉取到新迁移后必须先执行 `python -m alembic upgrade head`，应用启动不会删除或重建已有表。若需覆盖配置，可先在项目根目录执行：
 
 ```powershell
 Copy-Item .env.example .env
@@ -71,14 +72,16 @@ npm run build
 ```powershell
 cd E:\project\personal-workbench\backend
 .\.venv\Scripts\python.exe -m pytest
-.\.venv\Scripts\python.exe -c "from app.main import app; assert '/api/v1/health' in app.openapi()['paths']; print('import and OpenAPI check passed')"
+.\.venv\Scripts\python.exe -m alembic current
+.\.venv\Scripts\python.exe -c "from app.main import app; paths = app.openapi()['paths']; assert '/api/v1/health' in paths and '/api/v1/inbox' in paths; print('import and OpenAPI check passed')"
 ```
 
 ## 目录
 
 ```text
 frontend/        React + TypeScript + Vite
-backend/app/     FastAPI 应用、API、配置、数据库与 Schema
+backend/app/     FastAPI 应用、API、模型、服务、仓储、配置与 Schema
+backend/alembic/ Alembic 数据库迁移
 backend/tests/   后端 pytest
 tests/           后续跨前后端集成与端到端测试
 docs/            产品、架构、UI、研发流程与进度文档

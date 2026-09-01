@@ -81,6 +81,18 @@ const iconPaths: Record<IconName, ReactNode> = {
       <path d="M12 7.5V12l3 2" />
     </>
   ),
+  archive: (
+    <>
+      <path d="M4 7.5h16v13H4zM3 3.5h18v4H3z" />
+      <path d="M9 12h6" />
+    </>
+  ),
+  trash: (
+    <>
+      <path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13" />
+      <path d="M10 11v5M14 11v5" />
+    </>
+  ),
   x: <path d="m6 6 12 12M18 6 6 18" />,
 };
 
