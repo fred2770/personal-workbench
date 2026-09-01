@@ -15,3 +15,17 @@ class InboxItemStatus(str, Enum):
     INBOX = "INBOX"
     PROCESSED = "PROCESSED"
     ARCHIVED = "ARCHIVED"
+
+
+class ProjectStatus(str, Enum):
+    PLANNING = "PLANNING"
+    ACTIVE = "ACTIVE"
+    PAUSED = "PAUSED"
+    COMPLETED = "COMPLETED"
+    ARCHIVED = "ARCHIVED"
+
+
+class ProjectPriority(str, Enum):
+    HIGH = "HIGH"
+    NORMAL = "NORMAL"
+    LOW = "LOW"

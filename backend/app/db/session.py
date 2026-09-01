@@ -1,11 +1,21 @@
 from collections.abc import Generator
 from pathlib import Path
+import sqlite3
 
-from sqlalchemy import create_engine, text
-from sqlalchemy.engine import URL, make_url
+from sqlalchemy import create_engine, event, text
+from sqlalchemy.engine import Engine, URL, make_url
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.core.config import PROJECT_ROOT, settings
+
+
+@event.listens_for(Engine, "connect")
+def enable_sqlite_foreign_keys(dbapi_connection, _) -> None:
+    if not isinstance(dbapi_connection, sqlite3.Connection):
+        return
+    cursor = dbapi_connection.cursor()
+    cursor.execute("PRAGMA foreign_keys=ON")
+    cursor.close()
 
 
 def normalize_database_url(database_url: str) -> str:

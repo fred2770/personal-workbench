@@ -1,6 +1,5 @@
 import type {
   DashboardMetric,
-  ProjectSummary,
   RecentWorkItem,
   TodoItem,
 } from "../types/dashboard";
@@ -25,11 +24,4 @@ export const recentWorkItems: RecentWorkItem[] = [
   { id: "recent-uwb", title: "UWB 压测", summary: "完成 500 并发样本采集，正在整理 P95 数据", type: "专项任务", status: "进行中", updatedAt: "38 分钟前", tone: "accent" },
   { id: "recent-p4", title: "P4 鸿蒙 App", summary: "权限申请流程已联调，剩余异常回退处理", type: "需求", status: "联调中", updatedAt: "昨天 18:20", tone: "warning" },
   { id: "recent-workbench", title: "个人工作台开发", summary: "推进正式 Dashboard Shell 与基础页面路由", type: "开发", status: "进行中", updatedAt: "刚刚", tone: "success" },
-];
-
-export const dashboardProjects: ProjectSummary[] = [
-  { id: "project-tianjin", name: "天津现场问题", status: "风险跟进", progress: 68, todoCount: 5, updatedAt: "12 分钟前", tone: "danger" },
-  { id: "project-uwb", name: "UWB 压测", status: "进行中", progress: 82, todoCount: 3, updatedAt: "38 分钟前", tone: "accent" },
-  { id: "project-p4-harmony", name: "P4 鸿蒙 App", status: "联调中", progress: 54, todoCount: 7, updatedAt: "昨天", tone: "warning" },
-  { id: "project-workbench", name: "个人工作台开发", status: "开发中", progress: 36, todoCount: 9, updatedAt: "刚刚", tone: "success" },
 ];

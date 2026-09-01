@@ -30,13 +30,3 @@ export interface RecentWorkItem {
   updatedAt: string;
   tone: StatusTone;
 }
-
-export interface ProjectSummary {
-  id: string;
-  name: string;
-  status: string;
-  progress: number;
-  todoCount: number;
-  updatedAt: string;
-  tone: StatusTone;
-}

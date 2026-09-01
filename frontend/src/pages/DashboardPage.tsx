@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { createInboxItem, getInboxItems } from "../api/inbox";
+import { getProjects } from "../api/projects";
 import {
   dashboardMetrics,
-  dashboardProjects,
   dashboardTodos,
   recentWorkItems,
 } from "../data/dashboard";
@@ -15,6 +15,7 @@ import {
 } from "../dashboard/DashboardPanels";
 import { QuickCapture } from "../dashboard/QuickCapture";
 import type { CreateInboxItemInput } from "../types/inbox";
+import type { Project } from "../types/project";
 
 const initialCompletedIds = new Set(
   dashboardTodos.filter((item) => item.completed).map((item) => item.id),
@@ -25,6 +26,10 @@ export function DashboardPage() {
   const [completedIds, setCompletedIds] = useState(initialCompletedIds);
   const [inboxCount, setInboxCount] = useState<number | null>(null);
   const [inboxCountError, setInboxCountError] = useState(false);
+  const [activeProjectCount, setActiveProjectCount] = useState<number | null>(null);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [projectsLoading, setProjectsLoading] = useState(true);
+  const [projectsError, setProjectsError] = useState(false);
 
   const refreshInboxCount = async (signal?: AbortSignal) => {
     try {
@@ -47,6 +52,28 @@ export function DashboardPage() {
   }, []);
 
   useEffect(() => {
+    const controller = new AbortController();
+    setProjectsLoading(true);
+    Promise.all([
+      getProjects({ page: 1, pageSize: 1, status: "ACTIVE" }, controller.signal),
+      getProjects({ page: 1, pageSize: 4 }, controller.signal),
+    ])
+      .then(([activeResult, recentResult]) => {
+        setActiveProjectCount(activeResult.total);
+        setProjects(recentResult.items);
+        setProjectsError(false);
+      })
+      .catch((error: unknown) => {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        setProjectsError(true);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setProjectsLoading(false);
+      });
+    return () => controller.abort();
+  }, []);
+
+  useEffect(() => {
     if (location.hash !== "#quick-capture") {
       return;
     }
@@ -60,14 +87,24 @@ export function DashboardPage() {
 
   const metrics = useMemo(
     () => dashboardMetrics.map((metric) => {
-      if (metric.key !== "inbox") return metric;
-      return {
-        ...metric,
-        value: inboxCountError ? "!" : (inboxCount ?? "—"),
-        helper: inboxCountError ? "读取失败，请检查 API" : "真实待处理记录",
-      };
+      if (metric.key === "inbox") {
+        return {
+          ...metric,
+          value: inboxCountError ? "!" : (inboxCount ?? "—"),
+          helper: inboxCountError ? "读取失败，请检查 API" : "真实待处理记录",
+        };
+      }
+      if (metric.key === "projects") {
+        return {
+          ...metric,
+          value: projectsError ? "!" : (activeProjectCount ?? "—"),
+          helper: projectsError ? "读取失败，请检查 API" : "真实进行中项目",
+          source: "live" as const,
+        };
+      }
+      return metric;
     }),
-    [inboxCount, inboxCountError],
+    [activeProjectCount, inboxCount, inboxCountError, projectsError],
   );
 
   const handleCapture = async (payload: CreateInboxItemInput) => {
@@ -109,7 +146,7 @@ export function DashboardPage() {
         <QuickCapture onCapture={handleCapture} />
         <TodoPanel completedIds={completedIds} items={dashboardTodos} onToggle={toggleTodo} />
         <RecentWorkPanel items={recentWorkItems} />
-        <ProjectsPanel projects={dashboardProjects} />
+        <ProjectsPanel error={projectsError} loading={projectsLoading} projects={projects} />
       </div>
     </div>
   );

@@ -1,7 +1,9 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
+import { getProjects } from "../api/projects";
 import { AppIcon } from "../components/AppIcon";
 import { inboxTypeOptions } from "../data/inbox";
 import type { CreateInboxItemInput, InboxItemType } from "../types/inbox";
+import type { Project } from "../types/project";
 
 interface QuickCaptureProps {
   onCapture: (payload: CreateInboxItemInput) => Promise<void>;
@@ -10,9 +12,30 @@ interface QuickCaptureProps {
 export function QuickCapture({ onCapture }: QuickCaptureProps) {
   const [content, setContent] = useState("");
   const [type, setType] = useState<InboxItemType>("TODO");
+  const [projectId, setProjectId] = useState("");
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [projectsLoading, setProjectsLoading] = useState(true);
+  const [projectsError, setProjectsError] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+
+  useEffect(() => {
+    const controller = new AbortController();
+    getProjects({ page: 1, pageSize: 100 }, controller.signal)
+      .then((result) => {
+        setProjects(result.items);
+        setProjectsError(false);
+      })
+      .catch((error: unknown) => {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        setProjectsError(true);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setProjectsLoading(false);
+      });
+    return () => controller.abort();
+  }, []);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -25,7 +48,11 @@ export function QuickCapture({ onCapture }: QuickCaptureProps) {
     setFeedback("");
     setErrorMessage("");
     try {
-      await onCapture({ content: normalizedContent, type, project_id: null });
+      await onCapture({
+        content: normalizedContent,
+        type,
+        project_id: projectId ? Number(projectId) : null,
+      });
       setContent("");
       setFeedback("已保存到 Inbox");
     } catch (error) {
@@ -73,10 +100,13 @@ export function QuickCapture({ onCapture }: QuickCaptureProps) {
               ))}
             </select>
           </label>
-          <label className="select-control select-control--project" title="项目归类将在 Phase 3 接入">
+          <label className="select-control select-control--project">
             <span>项目</span>
-            <select disabled value="unassigned">
-              <option value="unassigned">暂不归类</option>
+            <select onChange={(event) => setProjectId(event.target.value)} value={projectId}>
+              <option value="">不关联项目</option>
+              {projects.map((project) => (
+                <option key={project.id} value={project.id}>{project.name}</option>
+              ))}
             </select>
           </label>
           <button
@@ -95,7 +125,9 @@ export function QuickCapture({ onCapture }: QuickCaptureProps) {
             aria-live="polite"
             className={errorMessage ? "form-message form-message--error" : "form-message"}
           >
-            {errorMessage || feedback || `${content.length}/2000`}
+            {errorMessage || feedback || (projectsError
+              ? "项目加载失败，仍可保存为未归类"
+              : projectsLoading ? "正在加载项目…" : `${content.length}/2000`)}
           </p>
           <button
             className="button button--primary"

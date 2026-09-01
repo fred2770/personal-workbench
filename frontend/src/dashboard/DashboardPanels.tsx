@@ -1,11 +1,12 @@
 import { Link } from "react-router-dom";
 import { AppIcon } from "../components/AppIcon";
+import { projectStatusLabels, projectStatusTones } from "../data/projects";
 import type {
   DashboardMetric,
-  ProjectSummary,
   RecentWorkItem,
   TodoItem,
 } from "../types/dashboard";
+import type { Project } from "../types/project";
 
 interface OverviewCardsProps {
   metrics: DashboardMetric[];
@@ -103,35 +104,66 @@ export function RecentWorkPanel({ items }: RecentWorkPanelProps) {
 }
 
 interface ProjectsPanelProps {
-  projects: ProjectSummary[];
+  projects: Project[];
+  loading: boolean;
+  error: boolean;
 }
 
-export function ProjectsPanel({ projects }: ProjectsPanelProps) {
+function formatProjectTime(value: string): string {
+  return new Intl.DateTimeFormat("zh-CN", {
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(value));
+}
+
+export function ProjectsPanel({ projects, loading, error }: ProjectsPanelProps) {
   return (
     <section className="panel projects-panel">
       <header className="panel-heading">
         <div><p className="section-label">Projects</p><h2>我的项目</h2></div>
         <Link className="panel-link" to="/projects">全部项目 <AppIcon name="arrow" size={14} /></Link>
       </header>
-      <div className="project-grid">
-        {projects.map((project) => (
-          <article className="project-card" key={project.id}>
+      {loading && (
+        <div aria-busy="true" className="project-grid">
+          {Array.from({ length: 4 }, (_, index) => <span className="dashboard-project-skeleton" key={index} />)}
+        </div>
+      )}
+      {!loading && error && (
+        <div className="dashboard-project-state">
+          <span>项目数据加载失败</span><Link to="/projects">前往项目页</Link>
+        </div>
+      )}
+      {!loading && !error && projects.length === 0 && (
+        <div className="dashboard-project-state">
+          <span>还没有项目</span><Link to="/projects">创建项目</Link>
+        </div>
+      )}
+      {!loading && !error && projects.length > 0 && (
+        <div className="project-grid">
+        {projects.map((project) => {
+          const tone = projectStatusTones[project.status];
+          return (
+          <Link className="project-card" key={project.id} to={`/projects/${project.id}`}>
             <div className="project-card-top">
-              <div className={`project-symbol tone-${project.tone}`}><AppIcon name="folder" size={17} /></div>
-              <span className={`status-badge tone-${project.tone}`}>{project.status}</span>
+              <div className={`project-symbol tone-${tone}`}><AppIcon name="folder" size={17} /></div>
+              <span className={`status-badge tone-${tone}`}>{projectStatusLabels[project.status]}</span>
             </div>
             <h3 title={project.name}>{project.name}</h3>
             <div className="progress-meta"><span>当前进度</span><strong>{project.progress}%</strong></div>
             <div className="progress-track" aria-label={`${project.name}进度 ${project.progress}%`}>
-              <span className={`tone-${project.tone}`} style={{ width: `${project.progress}%` }} />
+              <span className={`tone-${tone}`} style={{ width: `${project.progress}%` }} />
             </div>
             <footer>
-              <span>{project.todoCount} 项待办</span>
-              <time><AppIcon name="clock" size={13} />{project.updatedAt}</time>
+              <span>0 工作项</span>
+              <time><AppIcon name="clock" size={13} />{formatProjectTime(project.updated_at)}</time>
             </footer>
-          </article>
-        ))}
-      </div>
+          </Link>
+          );
+        })}
+        </div>
+      )}
     </section>
   );
 }
