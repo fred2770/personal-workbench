@@ -1,5 +1,4 @@
 import type {
-  CaptureOption,
   DashboardMetric,
   ProjectSummary,
   RecentWorkItem,
@@ -7,10 +6,10 @@ import type {
 } from "../types/dashboard";
 
 export const dashboardMetrics: DashboardMetric[] = [
-  { key: "today", label: "今日待办", value: 6, helper: "2 项临近截止", icon: "calendar", tone: "accent" },
-  { key: "issues", label: "待处理问题", value: 4, helper: "1 项高优先级", icon: "alert", tone: "danger" },
-  { key: "projects", label: "进行中项目", value: 4, helper: "2 个本周有更新", icon: "projects", tone: "success" },
-  { key: "inbox", label: "Inbox", value: 12, helper: "5 条尚未归类", icon: "inbox", tone: "warning" },
+  { key: "today", label: "今日待办", value: 6, helper: "2 项临近截止", icon: "calendar", tone: "accent", source: "mock" },
+  { key: "issues", label: "待处理问题", value: 4, helper: "1 项高优先级", icon: "alert", tone: "danger", source: "mock" },
+  { key: "projects", label: "进行中项目", value: 4, helper: "2 个本周有更新", icon: "projects", tone: "success", source: "mock" },
+  { key: "inbox", label: "Inbox", value: "—", helper: "读取真实待处理数据", icon: "inbox", tone: "warning", source: "live" },
 ];
 
 export const dashboardTodos: TodoItem[] = [
@@ -33,19 +32,4 @@ export const dashboardProjects: ProjectSummary[] = [
   { id: "project-uwb", name: "UWB 压测", status: "进行中", progress: 82, todoCount: 3, updatedAt: "38 分钟前", tone: "accent" },
   { id: "project-p4-harmony", name: "P4 鸿蒙 App", status: "联调中", progress: 54, todoCount: 7, updatedAt: "昨天", tone: "warning" },
   { id: "project-workbench", name: "个人工作台开发", status: "开发中", progress: 36, todoCount: 9, updatedAt: "刚刚", tone: "success" },
-];
-
-export const captureTypes: CaptureOption[] = [
-  { value: "TODO", label: "待办" },
-  { value: "ISSUE", label: "问题" },
-  { value: "BUG", label: "Bug" },
-  { value: "REQUIREMENT", label: "需求" },
-  { value: "FOLLOW_UP", label: "跟进" },
-  { value: "SITE_FEEDBACK", label: "现场反馈" },
-  { value: "MEMO", label: "备忘" },
-];
-
-export const captureProjects: CaptureOption[] = [
-  { value: "unassigned", label: "暂不归类" },
-  ...dashboardProjects.map((project) => ({ value: project.id, label: project.name })),
 ];

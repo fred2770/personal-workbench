@@ -5,10 +5,11 @@ export type StatusTone = "neutral" | "accent" | "success" | "warning" | "danger"
 export interface DashboardMetric {
   key: "today" | "issues" | "projects" | "inbox";
   label: string;
-  value: number;
+  value: number | string;
   helper: string;
   icon: IconName;
   tone: StatusTone;
+  source: "mock" | "live";
 }
 
 export interface TodoItem {
@@ -38,16 +39,4 @@ export interface ProjectSummary {
   todoCount: number;
   updatedAt: string;
   tone: StatusTone;
-}
-
-export interface CaptureOption {
-  value: string;
-  label: string;
-}
-
-export interface CapturePayload {
-  content: string;
-  type: string;
-  projectId: string;
-  attachmentNames: string[];
 }

@@ -16,4 +16,6 @@ export type IconName =
   | "folder"
   | "check"
   | "clock"
+  | "archive"
+  | "trash"
   | "x";
