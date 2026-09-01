@@ -9,12 +9,19 @@ export type InboxItemType =
 
 export type InboxItemStatus = "INBOX" | "PROCESSED" | "ARCHIVED";
 
+export interface InboxProject {
+  id: number;
+  name: string;
+  status: import("./project").ProjectStatus;
+}
+
 export interface InboxItem {
   id: number;
   title: string;
   content: string;
   type: InboxItemType;
   project_id: number | null;
+  project: InboxProject | null;
   status: InboxItemStatus;
   created_at: string;
   updated_at: string;
@@ -32,7 +39,7 @@ export interface InboxItemListResponse {
 export interface CreateInboxItemInput {
   content: string;
   type: InboxItemType;
-  project_id: null;
+  project_id: number | null;
 }
 
 export interface UpdateInboxItemInput {

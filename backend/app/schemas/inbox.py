@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from app.core.enums import InboxItemStatus, InboxItemType
+from app.core.enums import InboxItemStatus, InboxItemType, ProjectStatus
 
 
 class InboxItemCreate(BaseModel):
@@ -43,6 +43,14 @@ class InboxItemUpdate(BaseModel):
         return value
 
 
+class InboxProjectResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    name: str
+    status: ProjectStatus
+
+
 class InboxItemResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -51,6 +59,7 @@ class InboxItemResponse(BaseModel):
     content: str
     type: InboxItemType
     project_id: int | None
+    project: InboxProjectResponse | None
     status: InboxItemStatus
     created_at: datetime
     updated_at: datetime

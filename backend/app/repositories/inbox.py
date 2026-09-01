@@ -1,5 +1,5 @@
 from sqlalchemy import func, or_, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from app.core.enums import InboxItemStatus, InboxItemType
 from app.models.inbox import InboxItem
@@ -13,7 +13,11 @@ def create(db: Session, item: InboxItem) -> InboxItem:
 
 
 def get_by_id(db: Session, item_id: int) -> InboxItem | None:
-    return db.get(InboxItem, item_id)
+    return db.scalar(
+        select(InboxItem)
+        .options(selectinload(InboxItem.project))
+        .where(InboxItem.id == item_id)
+    )
 
 
 def list_items(
@@ -37,6 +41,7 @@ def list_items(
     total = db.scalar(select(func.count()).select_from(InboxItem).where(*filters)) or 0
     statement = (
         select(InboxItem)
+        .options(selectinload(InboxItem.project))
         .where(*filters)
         .order_by(InboxItem.created_at.desc(), InboxItem.id.desc())
         .offset((page - 1) * page_size)

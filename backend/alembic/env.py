@@ -6,7 +6,7 @@ from sqlalchemy import engine_from_config, pool
 from app.core.config import settings
 from app.db.base import Base
 from app.db.session import normalize_database_url
-from app.models import InboxItem  # noqa: F401
+from app.models import InboxItem, Project  # noqa: F401
 
 config = context.config
 

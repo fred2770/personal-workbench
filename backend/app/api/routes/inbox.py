@@ -15,6 +15,7 @@ from app.schemas.inbox import (
     InboxItemUpdate,
 )
 from app.services import inbox as inbox_service
+from app.services import projects as project_service
 
 router = APIRouter(prefix="/inbox", tags=["inbox"])
 
@@ -41,6 +42,8 @@ def create_inbox_item(
 ) -> InboxItem:
     try:
         return inbox_service.create_item(db, payload)
+    except project_service.ProjectNotFoundError as error:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found") from error
     except SQLAlchemyError as error:
         raise database_error(db, error) from error
 
@@ -86,6 +89,8 @@ def update_inbox_item(
 ) -> InboxItem:
     try:
         return inbox_service.update_item(db, get_item_or_404(db, item_id), payload)
+    except project_service.ProjectNotFoundError as error:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found") from error
     except SQLAlchemyError as error:
         raise database_error(db, error) from error
 

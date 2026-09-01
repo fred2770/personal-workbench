@@ -5,6 +5,8 @@ import { DashboardPage } from "./pages/DashboardPage";
 import { InboxPage } from "./pages/InboxPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { PlaceholderPage } from "./pages/PlaceholderPage";
+import { ProjectDetailPage } from "./pages/ProjectDetailPage";
+import { ProjectsPage } from "./pages/ProjectsPage";
 
 export default function App() {
   return (
@@ -13,8 +15,10 @@ export default function App() {
         <Route element={<Navigate replace to="/dashboard" />} index />
         <Route element={<DashboardPage />} path="dashboard" />
         <Route element={<InboxPage />} path="inbox" />
+        <Route element={<ProjectsPage />} path="projects" />
+        <Route element={<ProjectDetailPage />} path="projects/:projectId" />
         {appNavigation
-          .filter((item) => item.path !== "/dashboard" && item.path !== "/inbox")
+          .filter((item) => !["/dashboard", "/inbox", "/projects"].includes(item.path))
           .map((item) => (
             <Route
               element={<PlaceholderPage page={item} />}

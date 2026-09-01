@@ -6,6 +6,7 @@ from app.core.enums import InboxItemStatus, InboxItemType
 from app.models.inbox import InboxItem, utc_now
 from app.repositories import inbox as inbox_repository
 from app.schemas.inbox import InboxItemCreate, InboxItemListResponse, InboxItemUpdate
+from app.services import projects as project_service
 
 TITLE_MAX_LENGTH = 80
 
@@ -18,6 +19,8 @@ def build_title(content: str) -> str:
 
 
 def create_item(db: Session, payload: InboxItemCreate) -> InboxItem:
+    if payload.project_id is not None:
+        project_service.require_project(db, payload.project_id)
     item = InboxItem(
         title=build_title(payload.content),
         content=payload.content,
@@ -28,7 +31,7 @@ def create_item(db: Session, payload: InboxItemCreate) -> InboxItem:
     inbox_repository.create(db, item)
     db.commit()
     db.refresh(item)
-    return item
+    return inbox_repository.get_by_id(db, item.id) or item
 
 
 def list_items(
@@ -59,6 +62,8 @@ def list_items(
 
 def update_item(db: Session, item: InboxItem, payload: InboxItemUpdate) -> InboxItem:
     values = payload.model_dump(exclude_unset=True)
+    if values.get("project_id") is not None:
+        project_service.require_project(db, values["project_id"])
     if "content" in values:
         item.content = values["content"]
         item.title = build_title(item.content)
@@ -75,7 +80,7 @@ def update_item(db: Session, item: InboxItem, payload: InboxItemUpdate) -> Inbox
     item.updated_at = utc_now()
     db.commit()
     db.refresh(item)
-    return item
+    return inbox_repository.get_by_id(db, item.id) or item
 
 
 def archive_item(db: Session, item: InboxItem) -> InboxItem:

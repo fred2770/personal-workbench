@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { archiveInboxItem, deleteInboxItem, updateInboxItem } from "../api/inbox";
+import { getProjects } from "../api/projects";
 import { AppIcon } from "../components/AppIcon";
 import {
   inboxStatusLabels,
@@ -8,6 +9,7 @@ import {
   inboxTypeOptions,
 } from "../data/inbox";
 import type { InboxItem, InboxItemStatus, InboxItemType } from "../types/inbox";
+import type { Project } from "../types/project";
 
 interface InboxDetailDrawerProps {
   item: InboxItem | null;
@@ -40,6 +42,10 @@ export function InboxDetailDrawer({
   const [content, setContent] = useState("");
   const [type, setType] = useState<InboxItemType>("TODO");
   const [status, setStatus] = useState<InboxItemStatus>("INBOX");
+  const [projectId, setProjectId] = useState("");
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [projectsLoading, setProjectsLoading] = useState(true);
+  const [projectsError, setProjectsError] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -52,9 +58,27 @@ export function InboxDetailDrawer({
     setContent(item.content);
     setType(item.type);
     setStatus(item.status);
+    setProjectId(item.project_id ? String(item.project_id) : "");
     setActionError("");
     setFeedback("");
   }, [item?.id]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    getProjects({ page: 1, pageSize: 100 }, controller.signal)
+      .then((result) => {
+        setProjects(result.items);
+        setProjectsError(false);
+      })
+      .catch((projectError: unknown) => {
+        if (projectError instanceof DOMException && projectError.name === "AbortError") return;
+        setProjectsError(true);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setProjectsLoading(false);
+      });
+    return () => controller.abort();
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -80,6 +104,7 @@ export function InboxDetailDrawer({
         content: content.trim(),
         type,
         status,
+        project_id: projectId ? Number(projectId) : null,
       });
       setFeedback("修改已保存");
       onMutation(updated, false);
@@ -196,9 +221,20 @@ export function InboxDetailDrawer({
 
             <label className="field-control">
               <span>项目</span>
-              <select disabled value="unassigned">
-                <option value="unassigned">暂不归类（项目将在下一阶段接入）</option>
+              <select
+                disabled={projectsLoading}
+                onChange={(event) => setProjectId(event.target.value)}
+                value={projectId}
+              >
+                <option value="">未归类</option>
+                {item.project && !projects.some((project) => project.id === item.project?.id) && (
+                  <option value={item.project.id}>{item.project.name}（已归档）</option>
+                )}
+                {projects.map((project) => (
+                  <option key={project.id} value={project.id}>{project.name}</option>
+                ))}
               </select>
+              {projectsError && <span className="field-hint field-hint--error">项目列表加载失败，当前关联保持不变。</span>}
             </label>
 
             <p aria-live="polite" className={actionError ? "form-message form-message--error" : "form-message"}>

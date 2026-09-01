@@ -165,7 +165,7 @@ export function InboxPage() {
         </form>
 
         <div className="inbox-list-header" aria-hidden="true">
-          <span>类型</span><span>记录</span><span>状态</span><span>更新时间</span>
+          <span>类型</span><span>记录</span><span>项目</span><span>状态</span><span>更新时间</span>
         </div>
 
         {isLoading && (
@@ -210,8 +210,9 @@ export function InboxPage() {
                 <span className={`inbox-type inbox-type--${item.type.toLowerCase()}`}>{inboxTypeLabels[item.type]}</span>
                 <span className="inbox-row-copy">
                   <strong>{item.title}</strong>
-                  <small>{buildSummary(item.content, item.title)}</small>
+                  <small><em>{item.project?.name ?? "未归类"}</em> · {buildSummary(item.content, item.title)}</small>
                 </span>
+                <span className="inbox-project" title={item.project?.name ?? "未归类"}>{item.project?.name ?? "未归类"}</span>
                 <span className={`inbox-status inbox-status--${item.status.toLowerCase()}`}>{inboxStatusLabels[item.status]}</span>
                 <time>{formatListTime(item.updated_at)}</time>
               </button>

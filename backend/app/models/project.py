@@ -1,58 +1,55 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, Enum as SqlEnum, ForeignKey, Integer, String, Text
+from sqlalchemy import CheckConstraint, DateTime, Enum as SqlEnum, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.core.enums import InboxItemStatus, InboxItemType
+from app.core.enums import ProjectPriority, ProjectStatus
 from app.db.base import Base
+from app.models.inbox import utc_now
 
 if TYPE_CHECKING:
-    from app.models.project import Project
+    from app.models.inbox import InboxItem
 
 
-def utc_now() -> datetime:
-    return datetime.now(timezone.utc)
-
-
-class InboxItem(Base):
-    __tablename__ = "inbox_items"
+class Project(Base):
+    __tablename__ = "projects"
+    __table_args__ = (
+        CheckConstraint("progress >= 0 AND progress <= 100", name="ck_projects_progress_range"),
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    title: Mapped[str] = mapped_column(String(120), nullable=False)
-    content: Mapped[str] = mapped_column(Text, nullable=False)
-    type: Mapped[InboxItemType] = mapped_column(
+    name: Mapped[str] = mapped_column(String(160), nullable=False, index=True)
+    description: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    status: Mapped[ProjectStatus] = mapped_column(
         SqlEnum(
-            InboxItemType,
-            name="inbox_item_type",
+            ProjectStatus,
+            name="project_status",
             native_enum=False,
             create_constraint=True,
             validate_strings=True,
             values_callable=lambda enum: [item.value for item in enum],
         ),
         nullable=False,
+        default=ProjectStatus.PLANNING,
         index=True,
     )
-    project_id: Mapped[int | None] = mapped_column(
-        ForeignKey("projects.id", ondelete="SET NULL"),
-        nullable=True,
-        index=True,
-    )
-    status: Mapped[InboxItemStatus] = mapped_column(
+    priority: Mapped[ProjectPriority] = mapped_column(
         SqlEnum(
-            InboxItemStatus,
-            name="inbox_item_status",
+            ProjectPriority,
+            name="project_priority",
             native_enum=False,
             create_constraint=True,
             validate_strings=True,
             values_callable=lambda enum: [item.value for item in enum],
         ),
         nullable=False,
-        default=InboxItemStatus.INBOX,
+        default=ProjectPriority.NORMAL,
         index=True,
     )
+    progress: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=utc_now
     )
@@ -63,4 +60,7 @@ class InboxItem(Base):
         DateTime(timezone=True), nullable=True
     )
 
-    project: Mapped[Project | None] = relationship(back_populates="inbox_items")
+    inbox_items: Mapped[list[InboxItem]] = relationship(
+        back_populates="project",
+        passive_deletes=True,
+    )
